@@ -48,8 +48,12 @@ class RNNAttentionDecoder(nn.Module):
         if ncontrol is None:
             embeddings = word_embeddings(data.word_ids(ids)) + self.special_embeddings(data.special_ids(ids))
         else:
-            embeddings = word_embeddings(data.word_ids(ids)) + self.special_embeddings(data.special_ids_nosos(ids)) + \
-            self.sosembeddings(data.sos_ids(ids).div(3).mul(ncontrol))
+           inp = data.sos_ids(ids).div(3).mul(ncontrol)
+           device = 'cuda' if torch.cuda.is_available() else 'cpu'
+           inp = torch.tensor(inp).to(device).long()
+
+           embeddings = word_embeddings(data.word_ids(ids)) + self.special_embeddings(data.special_ids_nosos(ids)) + \
+           self.sosembeddings(inp)
         output = prev_output
         scores = []
         find_cosine= True if att_embeddings is not None else False
